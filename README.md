@@ -31,4 +31,5 @@ This repository includes the project folders, documentation, and the legal infor
 - **WinCCOATelegramBotAppExample_V1.0.pdf:** HowTo of Implementation, Installation and Usage of the WinCC OA Telegram Bot Library
 - **LEGAL_INFO.md:** Legal Information
 - **LICENSE.md:** License Information
-- **README.md:** this file 
+- **OSS.md** Third-Party Software Information
+- **README.md:** this file
