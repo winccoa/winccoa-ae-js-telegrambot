@@ -28,8 +28,6 @@ Please note the following license conditions and copyright notices applicable to
 
 | Component | Open Source Software [Yes/No] | Acknowledgements/Comment | License conditions and copyright notices |
 |-----------|------------------------------|-------------------------|----------------------------------------|
-| cppcheck - 1.87 | Yes | | [LICENSE AND COPYRIGHT INFORMATION FOR COMPONENT cppcheck - 1.87](#compDetail_171492) |
-| lizard - 1.14.7 | Yes | | [LICENSE AND COPYRIGHT INFORMATION FOR COMPONENT lizard - 1.14.7](#compDetail_171493) |
-| picojson - 1.3.0 | Yes | | [LICENSE AND COPYRIGHT INFORMATION FOR COMPONENT picojson - 1.3.0](#compDetail_171490) |
-| simplecpp - master d4bc1834ec5c2dc3f0143657275252aeaecc8436 | Yes | | [LICENSE AND COPYRIGHT INFORMATION FOR COMPONENT simplecpp - master d4bc1834ec5c2dc3f0143657275252aeaecc8436](#compDetail_171491) |
-| TinyXML2 - 6.2.0 | Yes | | [LICENSE AND COPYRIGHT INFORMATION FOR COMPONENT TinyXML2 - 6.2.0](#compDetail_26412) |
+| node-telegram-bot-api ^0.66.0 | Yes | | https://github.com/yagop/node-telegram-bot-api/blob/master/LICENSE.md |
+| puppeteer^23.9.0 | Yes | | https://github.com/puppeteer/puppeteer/blob/main/LICENSE |
+| Chart.js v4.4.7 | Yes | | https://github.com/chartjs/Chart.js/blob/master/LICENSE.md |
