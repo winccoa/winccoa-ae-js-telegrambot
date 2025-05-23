@@ -1,0 +1,16 @@
+version 1
+
+auth "" ""
+#Manager         | Start  | SecKill | Restart# | ResetMin | Options
+WCCILpmon        | manual |      30 |        3 |        1 |
+WCCILdataSQLite  | always |      30 |        3 |        1 |
+WCCOAnextgenarch | always |      30 |        2 |        2 |
+WCCILevent       | always |      30 |        3 |        1 |
+WCCILproxy       | always |      30 |        2 |        2 |
+WCCOActrl        | always |      30 |        3 |        1 |-num 1 -f pvss_scripts.lst
+WCCILsim         | always |      30 |        3 |        1 |
+WCCOActrl        | always |      30 |        2 |        2 |dashboard.ctl
+WCCOActrl        | always |      30 |        2 |        2 |webclient_http.ctl
+node             | manual |      30 |        2 |        2 |tgBot/index.js
+WCCOAui          | manual |      30 |        3 |        1 |-m gedi -user root:
+WCCOActrl        | manual |      30 |        2 |        2 |sim.ctl

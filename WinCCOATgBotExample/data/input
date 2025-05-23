@@ -1,0 +1,12 @@
+backup
+C:/WinCC_OA_Proj/WCCOA_3_20/ProveIt_In_Dallas/source/OnlineBackup/
+FILE
+0
+C:\WinCC_OA_Proj\ProveIt_In_Dallas_SSCADA\
+db\backup_db_ProveIt_In_Dallas_SSCADA_202503050400.txt
+db\wincc_oa\dbase.touch
+db\wincc_oa\sqlite\config.sqlite
+db\wincc_oa\sqlite\ident.sqlite
+db\wincc_oa\sqlite\last_alert.sqlite
+db\wincc_oa\sqlite\last_value.sqlite
+

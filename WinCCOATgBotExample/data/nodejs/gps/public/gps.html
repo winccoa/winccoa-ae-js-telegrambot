@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get GPS Position</title>
+    <script>
+	var latitude;
+	var longitude;
+	
+	function init()
+	{
+		getLocation();
+		setInterval(()=>getLocation(), 10000); //every 10 seconds
+	}
+	
+        function getLocation() {
+		
+		fetch('https://ipapi.co/json/')
+  .then(response => response.json())
+  .then(data => {
+    latitude = data.latitude;
+    longitude = data.longitude;
+    console.log("Latitude:", latitude);
+    console.log("Longitude:", longitude);
+	
+	showPosition();
+  })
+  .catch(error => {
+    console.error("Error getting location:", error);
+  });
+  
+	/*	
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }*/
+        }
+
+        function showPosition() {
+  /*          var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;*/
+            //alert("Latitude: " + latitude + ", Longitude: " + longitude);
+			
+			fetch('/sendGPS/' + latitude + '/'+longitude)
+			  .then(response => {
+				if (!response.ok) {
+				  throw new Error('Network response was not ok');
+				}
+				return response; 
+			  })
+			  .then(data => {
+				// Process the data
+				console.log(data);
+			  })
+			  .catch(error => {
+				// Handle errors
+				console.error('There was a problem with the fetch operation:', error);
+			  });
+        }
+
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+		
+		function gc()
+		{
+		fetch('https://ipapi.co/json/')
+  .then(response => response.json())
+  .then(data => {
+    const latitude = data.latitude;
+    const longitude = data.longitude;
+    console.log("Latitude:", latitude);
+    console.log("Longitude:", longitude);
+	alert("cooridnates found "+latitude+"  "+longitude);
+  })
+  .catch(error => {
+  alert("cooridnates not found ");
+    console.error("Error getting location:", error);
+  });
+  
+/*
+if ("geolocation" in navigator) {
+		alert("try   1");
+    // Geolocation is supported
+	try{
+    navigator.geolocation.getCurrentPosition(function(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        console.log("Latitude:", latitude);
+        console.log("Longitude:", longitude);
+		
+		alert("coordiantes read "+latitude+ "  "+longitude);
+    }, function(error) {
+	alert("error "+error.message);
+        console.error("Error getting geolocation:", error);
+    });
+	}
+	catch(ex)
+	{alert(ex);}
+} else {
+    // Geolocation is not supported
+		alert("try   2x");
+alert("coordiantes NOT read");
+    console.error("Geolocation is not supported by this browser.");
+}
+*/
+		}
+    </script>
+</head>
+<body onload="init()">
+<h1>your movements are monitored in WinCC OA application!</h1>
+</body>
+</html>

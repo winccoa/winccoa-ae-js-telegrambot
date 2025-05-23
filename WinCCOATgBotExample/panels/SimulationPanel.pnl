@@ -1,0 +1,239 @@
+V 14
+1
+LANG:10001 0 
+PANEL,-1 -1 555 265 N "_3DFace" 0
+E E E E E 1 -1 -1 0  48 84
+""0  1
+E E 4
+"CBRef" "1"
+"EClose" E
+"dpi" "96"
+"pdpi" "94.1104"
+0 0 0
+""
+DISPLAY_LAYER, 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
+LAYER, 0 
+0
+13 0
+"PUSH_BUTTON1"
+""
+1 50 90 E E E 1 E 1 E N "_ButtonText" E N "_Button" E E
+ E E
+0 0 0 0 0 0
+E E E
+8
+1
+LANG:10001 0 
+
+1
+"layoutAlignment" "AlignNone"
+1
+LANG:10001 48 MS Shell Dlg 2,-1,11,5,400,0,0,0,0,0,0,0,0,0,0,1
+0  48 48 171 111
+
+T 
+1
+LANG:10001 16 Start Simulation
+"main(mapping event)
+{
+  dpSet(\"Sim.Run\", true);
+}" 0
+ E E E
+13 1
+"PUSH_BUTTON2"
+""
+1 50 90 E E E 1 E 1 E N "_ButtonText" E N "_Button" E E
+ E E
+1 0 0 0 0 0
+E E E
+8
+1
+LANG:10001 0 
+
+1
+"layoutAlignment" "AlignNone"
+1
+LANG:10001 48 MS Shell Dlg 2,-1,11,5,400,0,0,0,0,0,0,0,0,0,0,1
+0  48 168 171 231
+
+T 
+1
+LANG:10001 15 Stop Simulation
+"main(mapping event)
+{
+  dpSet(\"Sim.Run\", false);
+}" 0
+ E E E
+13 2
+"PUSH_BUTTON3"
+""
+1 209.5 77.25274725274726 E E E 1 E 1 E N "_ButtonText" E N "_Button" E E
+ E E
+2 0 0 0 0 0
+E E E
+8
+1
+LANG:10001 0 
+
+1
+"layoutAlignment" "AlignNone"
+1
+LANG:10001 48 MS Shell Dlg 2,-1,11,5,400,0,0,0,0,0,0,0,0,0,0,1
+0  208 48 331 91
+
+T 
+1
+LANG:10001 17 Set Alarm Quality
+"main(mapping event)
+{
+  dpSet(\"Sim.SimulateAlmQuality\", true);
+}" 0
+ E E E
+13 4
+"PUSH_BUTTON5"
+""
+1 48 224 E E E 1 E 1 E N "_ButtonText" E N "_Button" E E
+ E E
+4 0 0 0 0 0
+E E E
+8
+1
+LANG:10001 0 
+
+1
+"layoutAlignment" "AlignNone"
+1
+LANG:10001 48 MS Shell Dlg 2,-1,11,5,400,0,0,0,0,0,0,0,0,0,0,1
+0  208 188 331 231
+
+T 
+1
+LANG:10001 22 Set Alarm Availability
+"main(mapping event)
+{
+  dpSet(\"Sim.SimulateAlmAvail\", true);
+}" 0
+ E E E
+13 5
+"PUSH_BUTTON6"
+""
+1 48 154 E E E 1 E 1 E N "_ButtonText" E N "_Button" E E
+ E E
+5 0 0 0 0 0
+E E E
+8
+1
+LANG:10001 0 
+
+1
+"layoutAlignment" "AlignNone"
+1
+LANG:10001 48 MS Shell Dlg 2,-1,11,5,400,0,0,0,0,0,0,0,0,0,0,1
+0  208 118 331 161
+
+T 
+1
+LANG:10001 14 Set Alarm Perf
+"main(mapping event)
+{
+  dpSet(\"Sim.SimulateAlmPerf\", true);
+}" 0
+ E E E
+13 6
+"PUSH_BUTTON7"
+""
+1 15 84 E E E 1 E 1 E N "_ButtonText" E N "_Button" E E
+ E E
+6 0 0 0 0 0
+E E E
+8
+1
+LANG:10001 0 
+
+1
+"layoutAlignment" "AlignNone"
+1
+LANG:10001 48 MS Shell Dlg 2,-1,11,5,400,0,0,0,0,0,0,0,0,0,0,1
+0  368 48 491 91
+
+T 
+1
+LANG:10001 19 Reset Alarm Quality
+"main(mapping event)
+{
+  dpSet(\"Sim.SimulateAlmQuality\", false);
+}" 0
+ E E E
+13 7
+"PUSH_BUTTON8"
+""
+1 15 84 E E E 1 E 1 E N "_ButtonText" E N "_Button" E E
+ E E
+7 0 0 0 0 0
+E E E
+8
+1
+LANG:10001 0 
+
+1
+"layoutAlignment" "AlignNone"
+1
+LANG:10001 48 MS Shell Dlg 2,-1,11,5,400,0,0,0,0,0,0,0,0,0,0,1
+0  368 188 491 231
+
+T 
+1
+LANG:10001 24 Reset Alarm Availability
+"main(mapping event)
+{
+  dpSet(\"Sim.SimulateAlmAvail\", false);
+}" 0
+ E E E
+13 8
+"PUSH_BUTTON9"
+""
+1 15 84 E E E 1 E 1 E N "_ButtonText" E N "_Button" E E
+ E E
+8 0 0 0 0 0
+E E E
+8
+1
+LANG:10001 0 
+
+1
+"layoutAlignment" "AlignNone"
+1
+LANG:10001 48 MS Shell Dlg 2,-1,11,5,400,0,0,0,0,0,0,0,0,0,0,1
+0  368 118 491 161
+
+T 
+1
+LANG:10001 16 Reset Alarm Perf
+"main(mapping event)
+{
+  dpSet(\"Sim.SimulateAlmPerf\", false);
+}" 0
+ E E E
+0
+LAYER, 1 
+0
+0
+LAYER, 2 
+0
+0
+LAYER, 3 
+0
+0
+LAYER, 4 
+0
+0
+LAYER, 5 
+0
+0
+LAYER, 6 
+0
+0
+LAYER, 7 
+0
+0
+0

@@ -1,0 +1,20 @@
+# ascii dump of database
+
+# DpType
+TypeName
+TelegramBot.TelegramBot	1#1
+	message	25#2
+	chatIds	9#3
+	apiKey	25#4
+	allowedChats	9#5
+	assignedUsers	9#7
+	dpesForSet	9#9
+	alarmQuery	9#10
+	dpesForTrends	9#11
+	alertsForAck	9#12
+	predefinedTrends	25#13
+	state	25#14
+
+# Datapoint/DpId
+DpName	TypeName	ID
+myBot	TelegramBot	499

@@ -1,0 +1,24 @@
+[general]
+pvss_path = "C:/Siemens/Automation/WinCC_OA/3.20"
+proj_path = "C:/WinCC_OA_Proj/applicationexmple"
+proj_version = "3.20"
+useNGA = 1
+useSQLite = 1
+langs = "en_US.utf8"
+
+[webClient]
+httpPort = 8080
+httpsPort = 0	#necessary for SmartSCADA
+
+[httpServer]
+indexPage = "/data/dashboard/index.html"
+uiArguments = "--no-sandbox"
+allowPanelParam = 1
+
+
+[wssServer]
+tokenExpire = 60000
+useSharedWorker = 0
+canWritePermissionBit = 6
+
+

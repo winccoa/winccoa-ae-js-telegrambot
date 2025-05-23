@@ -1,0 +1,11 @@
+{
+  "name": "mqtttopics",
+  "version": "1.0.0",
+  "description": "connect to the mqtt broker and collect the topics",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

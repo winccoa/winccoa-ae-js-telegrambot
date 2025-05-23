@@ -1,0 +1,171 @@
+{
+  "types": ["float", "uint", "ulong", "long", "int"],
+  "widgetType": "svg",
+  "label": {
+    "de.utf8": "press",
+    "en.utf8": "press"
+  },
+  "description": {
+    "de.utf8": "Das press Widget dient als dynamische Füllstandsanzeige mit farblicher Kennzeichnung aktueller Alarme.",
+    "en.utf8": "The press Widget serves as a dynamic fill level indicator with color coding of current alarms."
+  },
+  "size": {
+    "minRows": 5,
+    "minCols": 5
+  },
+  "inputs": [
+    {
+      "name": "ampel",
+      "label": {
+        "de.utf8": "Ampelstatus",
+        "en.utf8": "Traffic light status"
+      },
+      "dpe": "",
+      "description": {
+        "de.utf8": "Das Mapping der Werte auf die Farben wird über Regeln festgelegt.",
+        "en.utf8": "The mapping of the values to the colors is determined by rules."
+      },
+      "allowRuleOverride": true,
+      "rules": [
+        {
+          "name": "ampel",
+          "rules": [
+            {
+              "operator": "is",
+              "value": 0,
+              "actions": [
+                {
+                  "selector": ".red-active",
+                  "property": "opacity",
+                  "value": "1"
+                },
+                {
+                  "selector": ".yellow-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "selector": ".green-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "property": "class",
+                  "selector": "#Package",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "operator": "is",
+              "value": 1,
+              "actions": [
+                {
+                  "selector": ".red-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "selector": ".yellow-active",
+                  "property": "opacity",
+                  "value": "1"
+                },
+                {
+                  "selector": ".green-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "property": "class",
+                  "selector": "#Package",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "operator": "is",
+              "value": 2,
+              "actions": [
+                {
+                  "selector": ".red-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "selector": ".yellow-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "selector": ".green-active",
+                  "property": "opacity",
+                  "value": "1"
+                },
+                {
+                  "property": "class",
+                  "selector": "#Package",
+                  "value": "animation"
+                }
+              ]
+            },
+            {
+              "operator": "smaller",
+              "value": 0,
+              "actions": [
+                {
+                  "selector": ".red-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "selector": ".yellow-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "selector": ".green-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "property": "class",
+                  "selector": "#Package",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "operator": "greater",
+              "value": 2,
+              "actions": [
+                {
+                  "selector": ".red-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "selector": ".yellow-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "selector": ".green-active",
+                  "property": "opacity",
+                  "value": "0"
+                },
+                {
+                  "property": "class",
+                  "selector": "#Package",
+                  "value": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "svgFile": "data/WebUI/widgets/press.svg",
+  "svgFileDark": "data/WebUI/widgets/press.svg",
+  "allowStructureDrop": false
+}
