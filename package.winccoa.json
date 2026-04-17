@@ -1,0 +1,21 @@
+{
+  "RepoName": "WinCC OA Telegram Bot Library",
+  "Keywords": [
+    "javascript",
+    "telegram-bot",
+    "messaging",
+    "notifications",
+    "monitoring",
+    "remote-control",
+    "automation"
+  ],
+  "Version": "1.0.0",
+  "Description": "Connects WinCC OA to the Telegram messaging platform, enabling alert notifications, live monitoring, and remote interaction through a bot interface.",
+  "OaVersions": "^3.20.0",
+  "Subprojects": [
+    {
+      "Name": "tgbotlib",
+      "Description": "Telegram Bot Library for integrating WinCC OA projects with Telegram-based messaging, alerts, and remote commands."
+    }
+  ]
+}
