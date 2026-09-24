@@ -1,6 +1,6 @@
 const { State } = require("../utils/stateManager");
-const { WinccoaElementType } = require('winccoa-manager');
 const dpName = "myBot"
+const BOOL_ELEMENT_TYPE = 23;
 
 const valuesHandlers = new Map([
     ["awaiting_value", setValue],
@@ -49,7 +49,7 @@ async function setValue(winccoa, msg, myBot, chatId) {
     let value = msg.text;
     stateManager.setState(state);
     let dpType = winccoa.dpElementType(key);
-    if (dpType === WinccoaElementType.Bool) {
+    if (dpType === BOOL_ELEMENT_TYPE) {
         let b = !(value.toLowerCase() === "false") && !(value.toLowerCase() === "0");
         await winccoa.dpSet(`${key}`, b);
         return;

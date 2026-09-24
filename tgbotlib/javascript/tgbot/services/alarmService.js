@@ -1,10 +1,11 @@
 const { AlarmsMenuMarkup } = require('../utils/menusmarkups');
 const { State } = require('../utils/stateManager');
+const { convertQuery } = require('../utils/queryConverter');
 const dpName = "myBot"
 async function generalAlarms(winccoa, msg, myBot, chatId) {
     let stateManager = new State(winccoa);
     let entries = (await winccoa.dpGet([`${dpName}.alarmQuery`]))[0];
-    let dpes;
+    let dpes = [];
     for (let entry of entries) {
         let splitted = entry.split('#');
         let entryChatId = splitted[0];
@@ -29,32 +30,36 @@ async function generalAlarms(winccoa, msg, myBot, chatId) {
     let dpesForAck = (await winccoa.dpGet(`${dpName}.alertsForAck`))
         .filter(str => str.includes(chatId))[0]
         ?.replace(`${chatId}#`, '').split(';').filter(x => x != '') ?? [];
-    dpes.forEach(async ([dpe, alerttime, val, text, ack]) => {
+    for (const [dpe, alerttime, val, text, ack] of dpes) {
         const btnTxt = winccoa.dpGetDescription(dpe);
+        const callbackData = `ack:${winccoa.dpGetId(dpe)[0]}:${winccoa.dpGetId(dpe)[1]}`;
         const buttons = dpesForAck.includes(dpe) && (ack == 1 || ack == 3)
             ? [[{
                 text: `Ack`,
-                callback_data: `ack:${winccoa.dpGetId(dpe)[0]}:${winccoa.dpGetId(dpe)[1]}:${chatId}`,
+                callback_data: callbackData,
             }]]
             : [[]];
-        await myBot.sendMessage(chatId, `${text} {${btnTxt} ${val}}`, { reply_markup: { inline_keyboard: buttons } });
-    })
+        const message = await myBot.sendMessage(chatId, `${text} {${btnTxt} ${val}}`, { reply_markup: { inline_keyboard: buttons } });
+        if (buttons[0].length > 0) {
+            myBot.registerAcknowledgement(chatId, message.message_id, callbackData, dpe);
+        }
+    }
 }
 
 async function muteUnmute(winccoa, msg, myBot, chatId) {
     myBot.action('mute', async (query) => {
         const chatId = query.message.chat.id;
         refreshState(query, true, winccoa, chatId);
-        const newKeyboard = makeReplyMarkup(chatId, winccoa);
-        myBot.editMessageReplyMarkup(chatId, query.message.message_id, { inline_keyboard: newKeyboard });
+        const newKeyboard = await makeReplyMarkup(chatId, winccoa);
+        await myBot.editMessageReplyMarkup(chatId, query.message.message_id, { inline_keyboard: newKeyboard });
     });   
     myBot.action('unmute', async (query) => {
         const chatId = query.message.chat.id;
         refreshState(query, false, winccoa, chatId);
-        const newKeyboard = makeReplyMarkup(chatId, winccoa);
-        myBot.editMessageReplyMarkup(chatId, query.message.message_id, { inline_keyboard: newKeyboard });
+        const newKeyboard = await makeReplyMarkup(chatId, winccoa);
+        await myBot.editMessageReplyMarkup(chatId, query.message.message_id, { inline_keyboard: newKeyboard });
     });
-    const inlineKeyboard = makeReplyMarkup(chatId, winccoa);
+    const inlineKeyboard = await makeReplyMarkup(chatId, winccoa);
     await myBot.sendMessage(chatId, "Choose an option:", { reply_markup: { inline_keyboard: inlineKeyboard } });
 }
 
@@ -77,7 +82,7 @@ function refreshState(query, mute, winccoa, chatId) {
     stateManager.setState(state);
 }
 
-function makeReplyMarkup(chatId, winccoa) {
+async function makeReplyMarkup(chatId, winccoa) {
     let stateManager = new State(winccoa);
     let state = stateManager.getState();
     if (!state[chatId]) {
@@ -86,8 +91,17 @@ function makeReplyMarkup(chatId, winccoa) {
     if (!state[chatId]['mutedDPEs']) {
         state[chatId]['mutedDPEs'] = [];
     }
+    const entries = await winccoa.dpGet(`${dpName}.alarmQuery`) ?? [];
+    const entry = entries.find(value => value.startsWith(`${chatId}#`));
+    let dpes = [];
+    if (entry) {
+        const query = entry.substring(entry.indexOf('#') + 1);
+        dpes = (await winccoa.dpQuery(convertQuery(query))).slice(1).map(value => value[0]);
+    }
+    state[chatId]['dpesForSubscription'] = dpes;
+    state[chatId]['mutedDPEs'] = state[chatId]['mutedDPEs'].filter(dpe => dpes.includes(dpe));
+    stateManager.setState(state);
     let mutedDPEs = state[chatId]['mutedDPEs'];
-    let dpes = state[chatId]['dpesForSubscription'];
     let unmutedDPEs = dpes.filter(x => !mutedDPEs.includes(x));
     let newKeyboard = unmutedDPEs.map(x => {
         const dpEl_id = winccoa.dpGetId(x);

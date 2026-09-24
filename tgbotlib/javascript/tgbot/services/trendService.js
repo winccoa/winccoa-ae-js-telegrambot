@@ -245,10 +245,13 @@ async function configureTrends(winccoa, msg, myBot, chatId) {
 }
 
 async function generateChart(chartConfig) {
-    const puppeteer = require('puppeteer');
+    const puppeteer = await import('puppeteer');
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-    const chartJsContent = fs.readFileSync(path.resolve(__dirname, '../utils/chart.js'), 'utf8');
+    const chartJsContent = fs.readFileSync(
+        path.join(path.dirname(require.resolve('chart.js')), 'chart.umd.js'),
+        'utf8'
+    );
     const strCharConfig = JSON.stringify(chartConfig);
     const html = `
     <html>
@@ -281,3 +284,4 @@ module.exports.configureTrends = configureTrends
 module.exports.addTrend = addTrend
 module.exports.deleteTrend = deleteTrend
 module.exports.editExistingTrend = editExistingTrend
+module.exports.generateChart = generateChart

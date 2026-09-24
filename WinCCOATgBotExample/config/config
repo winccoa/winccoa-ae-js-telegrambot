@@ -1,24 +1,21 @@
 [general]
 pvss_path = "C:/Siemens/Automation/WinCC_OA/3.20"
-proj_path = "C:/WinCC_OA_Proj/applicationexmple"
+proj_path = "C:/WinCC_OA_Proj/WinCCOATgBotExample"
 proj_version = "3.20"
 useNGA = 1
 useSQLite = 1
 langs = "en_US.utf8"
-
-[webClient]
-httpPort = 8080
-httpsPort = 0	#necessary for SmartSCADA
-
+accessControlPlugin = "AccessControlPlugin"
+ssaChainFile = "root-cert.pem"
+ssaCertificate = "file:user-cert.pem"
+ssaPrivateKey = "file:user-key.pem"
+[ui]
+defaultFont = "Noto Sans"
+httpServer = "https://dinm5CG35069QY:443"
 [httpServer]
-indexPage = "/data/dashboard/index.html"
-uiArguments = "--no-sandbox"
-allowPanelParam = 1
-
-
-[wssServer]
-tokenExpire = 60000
-useSharedWorker = 0
-canWritePermissionBit = 6
-
-
+uiArguments = "-p vision/login.pnl -centered -iconBar -menuBar -ssa"
+uiUsesMainServerAsFileServer = 0
+[webClient]
+httpsPort = 443
+httpPort = 0
+clientSideAuth = 0
