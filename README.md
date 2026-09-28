@@ -8,6 +8,8 @@
 
 **Application Name:** WinCC OA Telegram Bot Library
 
+**Runtime:** Node.js 26.9.0 and npm 12.0.2
+
 ![mainpic](https://github.com/user-attachments/assets/6f1d1fb6-4284-4c2b-b3d7-4cebc553f271)
 
 ## Key Features:
@@ -22,14 +24,22 @@
     
     ![2025-05-23 07-54-43](https://github.com/user-attachments/assets/5b0113e2-f209-4942-a5ca-712635b64aae)
     
-For detailed instructions on usage and integration, please refer to the datasheet with the name: “WinCCOATelegramBotAppExample.pdf”.
+For detailed instructions on usage and integration, see `WinCCOATelegramBotAppExample_V1.1.pdf`.
 
 ## Content:
 This repository includes the project folders, documentation, and the legal information of the application example, organized as following:
 - **tgbotlib** The Telegram Bot Library subproject
 - **WinCCOATgBotExample** Predefined project for testing with WinCC OA
-- **WinCCOATelegramBotAppExample_V1.0.pdf:** HowTo of Implementation, Installation and Usage of the WinCC OA Telegram Bot Library
+- **WinCCOATelegramBotAppExample_V1.0.pdf:** Implementation, installation, and usage guide
 - **LEGAL_INFO.md:** Legal Information
 - **LICENSE.md:** License Information
 - **OSS.md** Third-Party Software Information
 - **README.md:** this file
+
+## Installation
+
+Install the locked dependencies from `tgbotlib/javascript/tgbot`:
+
+```console
+npm ci
+```

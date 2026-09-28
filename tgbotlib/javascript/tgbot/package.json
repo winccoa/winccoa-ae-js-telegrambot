@@ -4,17 +4,21 @@
   "description": "Telegram bot for WinCC OA",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "test": "node --check index.js && node --check services/TelegramBot.js && node --check services/trendService.js && node --check services/setValueService.js"
   },
   "author": "ETM",
   "license": "ISC",
+  "packageManager": "npm@12.0.2",
   "dependencies": {
-    "node-telegram-bot-api": "^0.66.0",
-    "puppeteer": "^23.9.0"
+    "chart.js": "4.5.1",
+    "node-telegram-bot-api": "2.1.0",
+    "puppeteer": "25.11.0"
   },
-  "devDependencies": {
-    "webpack": "^5.97.1",
-    "webpack-cli": "^6.0.1"
+  "engines": {
+    "node": "26.9.0",
+    "npm": "12.0.2"
+  },
+  "allowScripts": {
+    "puppeteer@25.11.0": true
   }
 }

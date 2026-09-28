@@ -1,4 +1,5 @@
-const TelegramBot = require('node-telegram-bot-api');
+const { Bot } = require('node-telegram-bot-api');
+const { fromPath } = require('node-telegram-bot-api/node');
 const { processMessage } = require('./messageHandler');
 const { State } = require('../utils/stateManager');
 const { convertQuery } = require('../utils/queryConverter');
@@ -8,48 +9,91 @@ let stateManager = null;
 
 let registeredCallbacks = new Map();
 
-let answeredQueries = new Map();
-function TBot(apiKey) {
-    this.bot = new TelegramBot(apiKey, { polling: true });
+function TBot(apiKey, isChatAllowed) {
+    this.bot = new Bot(apiKey);
     this.sendMessage = function (chatId, text, options) {
-        this.bot.sendMessage(chatId, text, options);
+        return this.bot.api.sendMessage({ chat_id: chatId, text, ...options });
     }
     this.message = (event, callback) => {
-        this.bot.on(event, callback);
+        this.bot.on(event, (context) => callback(context.update[event]));
     };
     this.on = function (event, callback) {
-        this.bot.on(event, callback);
+        this.bot.on(event, (context) => callback(context.update[event]));
     }
 
-    this.sendPhoto = function (chatId, photo, caption) {
-        this.bot.sendPhoto(chatId, photo, { caption });
+    this.sendPhoto = async function (chatId, photo, options) {
+        return this.bot.api.sendPhoto({ chat_id: chatId, photo: await fromPath(photo), ...options });
     };
 
     this.action = function (action, callback) {
-        if (registeredCallbacks.has(action)) {
+        if (callback === null) {
+            registeredCallbacks.delete(action);
             return;
         }
-        else {
-            registeredCallbacks.set(action,'')
-        }
-        this.bot.on('callback_query', (query) => {
-            const callbackData = query.data;
-
-            if (callbackData && callbackData.startsWith(action)) {
-                callback(query, callbackData);
+        registeredCallbacks.set(action, callback);
+    };
+    this.pendingAcknowledgements = new Map();
+    this.registerAcknowledgement = function (chatId, messageId, callbackData, dpe) {
+        const normalizedChatId = chatId.toString();
+        for (const [key, value] of this.pendingAcknowledgements) {
+            if (value.chatId === normalizedChatId && value.dpe === dpe) {
+                this.pendingAcknowledgements.delete(key);
             }
+        }
+        this.pendingAcknowledgements.set(`${normalizedChatId}:${messageId}`, {
+            chatId: normalizedChatId,
+            callbackData,
+            dpe
         });
     };
+    this.retainAcknowledgements = function (chatId, dpes) {
+        const normalizedChatId = chatId.toString();
+        for (const [key, value] of this.pendingAcknowledgements) {
+            if (value.chatId === normalizedChatId && !dpes.includes(value.dpe)) {
+                this.pendingAcknowledgements.delete(key);
+            }
+        }
+    };
 
-    this.sendDocument = function (chatId, document, caption) {
-        this.bot.sendDocument(chatId, document, { caption });
+    this.sendDocument = function (chatId, document, caption, options) {
+        return fromPath(document).then((inputFile) => this.bot.api.sendDocument({
+            chat_id: chatId,
+            document: inputFile,
+            caption,
+            ...options
+        }));
     };
 
     this.editMessageReplyMarkup = function (chatId, messageId, inlineKeyBoard) {
-        this.bot.editMessageReplyMarkup(inlineKeyBoard, { chat_id: chatId, message_id: messageId });
+        return this.bot.api.editMessageReplyMarkup({
+            chat_id: chatId,
+            message_id: messageId,
+            reply_markup: inlineKeyBoard
+        });
     }
     this.editMessageText = function (chatId, messageId, text) {
-        this.bot.editMessageText(text, { chat_id: chatId, message_id: messageId });
+        return this.bot.api.editMessageText({ chat_id: chatId, message_id: messageId, text });
+    }
+    this.bot.on('callback_query', async (context) => {
+        const query = context.callbackQuery;
+        const chatId = query.message?.chat.id?.toString();
+        if (!chatId || !isChatAllowed(chatId)) {
+            await context.answerCallbackQuery({ text: 'Access denied' });
+            return;
+        }
+        const callbackData = query.data;
+        for (const [action, callback] of registeredCallbacks) {
+            if (callbackData && callbackData.startsWith(`${action}:`)) {
+                await callback(query, callbackData);
+                await context.answerCallbackQuery();
+                return;
+            }
+        }
+    });
+    this.start = function () {
+        this.bot.api.deleteWebhook({ drop_pending_updates: true })
+            .then(() => this.bot.startPolling())
+            .catch((error) => console.error('Telegram polling stopped:', error));
     }
     this.activeChats = {};
 }
@@ -63,7 +107,8 @@ const runTelegramBot = async (winccoa) => {
     if (!presentedChats || presentedChats.length === 0) {
         presentedChats = [];
     }
-    myBot = new TBot(apiKey);
+    myBot = new TBot(apiKey, (chatId) => allowedChats?.includes(chatId) ?? false);
+    myBot.action('ack', (query) => acknowledgeAlert(winccoa, myBot, query));
     stateManager = new State(winccoa);
     try {
         winccoa.dpConnect((n, v, t, e) => allowedChats = v[0], [`${dpName}.allowedChats`], true);
@@ -94,6 +139,7 @@ const runTelegramBot = async (winccoa) => {
         stateManager.setState(state);
         subsribeOnAlertsQuery(chatId, query, winccoa);
     }
+    myBot.start();
 }
 
 function subsribeOnAlertsQuery(chatId, query, winccoa) {
@@ -112,6 +158,8 @@ async function sendAllertMessage(
         console.log(error);
         return;
     }
+    const activeDpes = values.slice(1).map(value => value[0]);
+    myBot.retainAcknowledgements(chatId, activeDpes);
     if (values.length <= 1) return;
     let dpesForAck = (await winccoa.dpGet(`${dpName}.alertsForAck`))
         .filter(str => str.includes(chatId))[0]
@@ -124,22 +172,36 @@ async function sendAllertMessage(
         let text = values[i][3];
         let ack = await winccoa.dpGet(`${dpName}:_alert_hdl.._act_state`);
         const btnText = winccoa.dpGetDescription(dpName);
+        const callbackData = `ack:${winccoa.dpGetId(dpName)[0]}:${winccoa.dpGetId(dpName)[1]}`;
         const buttons = dpesForAck.includes(dpName) && (ack === 1 || ack === 3)
             ? [[{
                 text: `Ack`,
-                callback_data: `ack:${winccoa.dpGetId(dpName)[0]}:${winccoa.dpGetId(dpName)[1]}:${chatId}`,
+                callback_data: callbackData,
             }]]
             : [[]];
-        myBot.sendMessage(chatId, `${text} {${btnText} ${val}}`, { reply_markup: { inline_keyboard: buttons } });
-        myBot.action('ack', async (query) => {
-            if (answeredQueries.has(query.id)) return;
-            answeredQueries.set(query.id, '');
-            const [, dpEl_id1, dpEl_id2, chatId] = query.data.split(':');
-            const dpe = winccoa.dpGetName(Number(dpEl_id1), Number(dpEl_id2));
-            await winccoa.dpSet(`${dpe}:_alert_hdl.._ack`, 2);
-            myBot.editMessageReplyMarkup(query.message.chat.id, query.message.message_id, { inline_keyboard: [] });
-        });
+        const message = await myBot.sendMessage(chatId, `${text} {${btnText} ${val}}`, { reply_markup: { inline_keyboard: buttons } });
+        if (buttons[0].length > 0) {
+            myBot.registerAcknowledgement(chatId, message.message_id, callbackData, dpName);
+        }
     }
+}
+
+async function acknowledgeAlert(winccoa, myBot, query) {
+    const chatId = query.message?.chat.id?.toString();
+    const messageId = query.message?.message_id;
+    if (!chatId || messageId === undefined) return;
+
+    const key = `${chatId}:${messageId}`;
+    const pending = myBot.pendingAcknowledgements.get(key);
+    if (!pending || pending.callbackData !== query.data) return;
+
+    myBot.pendingAcknowledgements.delete(key);
+    const ackResult = await winccoa.dpGet(`${pending.dpe}:_alert_hdl.._act_state`);
+    const ackState = Array.isArray(ackResult) ? ackResult[0] : ackResult;
+    if (ackState !== 1 && ackState !== 3) return;
+
+    await winccoa.dpSet(`${pending.dpe}:_alert_hdl.._ack`, 2);
+    await myBot.editMessageReplyMarkup(chatId, messageId, { inline_keyboard: [] });
 }
 
 function connectCB(
@@ -158,3 +220,4 @@ function connectCB(
 }
 
 module.exports.runTelegramBot = runTelegramBot;
+module.exports.TBot = TBot;

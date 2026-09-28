@@ -1,4 +1,4 @@
-const { TrendsConfigMenuMarkup, TrendsTimeRangesMarkup } = require('../utils/menusmarkups');
+const { TrendsConfigMenuMarkup, TrendsTimeRangesMarkup, MainMenuMarkup } = require('../utils/menusmarkups');
 const { State } = require('../utils/stateManager');
 const dpName = "myBot"
 const fs = require('fs');
@@ -8,8 +8,6 @@ const trendHandlers = new Map([
     ["AVAILABLE_TRENDS", showTimeRanges],
     ["AWAITING_TIMERANGE", sendTrend],
 ]);
-
-let answeredQueries = new Map();
 
 async function editExistingTrend(winccoa, msg, myBot, chatId) {
     const stateManager = new State(winccoa);
@@ -21,11 +19,11 @@ async function editExistingTrend(winccoa, msg, myBot, chatId) {
         state[chatId]["trends"] = {};
     }
     const keys = Object.keys(state[chatId]["trends"]);
-    const keyboard = keys.map((key) => [{ text: `Edit ${key}`, callback_data: `edit:${key}:${chatId}` }]);
+    const keyboard = keys.map((key) => [{ text: `Edit ${key}`, callback_data: `edit:${key}` }]);
     myBot.sendMessage(chatId, `Choose trend to edit`, { reply_markup: { inline_keyboard: keyboard } });
     myBot.action('edit', async (query) => {
-        const [, trendName, chatId] = query.data.split(':');
-        if (answeredQueries.has(query.id)) return;
+        const [, trendName] = query.data.split(':');
+        const chatId = query.message.chat.id;
         myBot.action('edit', null);
         editTrendInternal(winccoa, trendName, myBot, chatId)
     });
@@ -76,7 +74,7 @@ async function sendTrend(winccoa, msg, myBot, chatId) {
     let result = await winccoa.dpQuery(historicalQuery);
     const data = result.slice(1);
     if (!data.length) {
-        myBot.sendMessage(chatId, "There is no data for this period");
+        myBot.sendMessage(chatId, "There is no data for this period",);
         return;
     }
     const groupedData = {};
@@ -112,11 +110,16 @@ async function sendTrend(winccoa, msg, myBot, chatId) {
             },
         },
     };
-    
+
     const filePath = './chart.png';
     const buff = await generateChart(chartConfig);
     fs.writeFileSync(filePath, buff);
-    myBot.sendPhoto(chatId, filePath, `Trend: ${trendName} Timerange: ${msg.text}`);
+    const options = {
+        caption: `Trend: ${trendName} Timerange: ${msg.text}`,
+        parse_mode: 'Markdown',
+        reply_markup: MainMenuMarkup
+    }
+    myBot.sendPhoto(chatId, filePath, options);
 }
 
 async function editTrendInternal(winccoa, trendName, myBot, chatId) {
@@ -135,39 +138,41 @@ async function editTrendInternal(winccoa, trendName, myBot, chatId) {
     trend["name"] = trendName;
     state[chatId]["trends"][trendName] = trend;
     stateManager.setState(state);
-    let keyboard = await makeReplyMarkup(chatId, winccoa, trend);
+    const keyboard = await makeReplyMarkup(chatId, winccoa, trend);
     myBot.sendMessage(chatId, `Add/Remove DPEs for trend ${trendName}`, { reply_markup: { inline_keyboard: keyboard } });
     myBot.action('add_dpe', async (query) => {
-        const [, dpEl_id1, dpEl_id2, trendName, chatId] = query.data.split(':');
-        const dpe = winccoa.dpGetName(Number(dpEl_id1), Number(dpEl_id2));
-        if (answeredQueries.has(query.id)) return;
-        answeredQueries.set(query.id, '');
-        let stateManager = new State(winccoa);
-        let state = stateManager.getState();
+        const chatId = query.message.chat.id;
+        refreshState(query, true, winccoa, chatId);
+        const newKeyboard = await makeReplyMarkup(chatId, winccoa, state[chatId]["trends"][trendName]);
+        myBot.editMessageReplyMarkup(chatId, query.message.message_id, { inline_keyboard: newKeyboard });
+    });
+
+    myBot.action('delete_dpe', async (query) => {
+        const chatId = query.message.chat.id;
+        refreshState(query, false, winccoa, chatId);
+        const newKeyboard = await makeReplyMarkup(chatId, winccoa, state[chatId]["trends"][trendName]);
+        myBot.editMessageReplyMarkup(chatId, query.message.message_id, { inline_keyboard: newKeyboard });
+    });
+}
+
+function refreshState(query, add_dpe, winccoa, chatId) {
+    const [, dpEl_id1, dpEl_id2, trendName] = query.data.split(':');
+    const dpe = winccoa.dpGetName(Number(dpEl_id1), Number(dpEl_id2));
+    let stateManager = new State(winccoa);
+    let state = stateManager.getState();
+    if (add_dpe) {
         if (!state[chatId]["trends"][trendName]["dpes"]) {
             state[chatId]["trends"][trendName]["dpes"] = []
         }
         state[chatId]["trends"][trendName]["dpes"].push(`${dpe}`);
-        stateManager.setState(state);
-        const newKeyboard = await makeReplyMarkup(chatId, winccoa, state[chatId]["trends"][trendName]);
-        myBot.editMessageReplyMarkup(query.message.chat.id, query.message.message_id, { inline_keyboard: newKeyboard });
-    });
-
-    myBot.action('delete_dpe', async (query) => {
-        const [, dpEl_id1, dpEl_id2, trendName, chatId] = query.data.split(':');
-        const dpe = winccoa.dpGetName(Number(dpEl_id1), Number(dpEl_id2));
-        if (answeredQueries.has(query.id)) return;
-        answeredQueries.set(query.id, '');
-        let stateManager = new State(winccoa);
-        let state = stateManager.getState();
+    }
+    else {
         let index = state[chatId]["trends"][trendName]["dpes"].indexOf(dpe);
         if (index > -1) {
             state[chatId]["trends"][trendName]["dpes"].splice(index, 1);
         }
-        stateManager.setState(state);
-        const newKeyboard = await makeReplyMarkup(chatId, winccoa, state[chatId]["trends"][trendName]);
-        myBot.editMessageReplyMarkup(query.message.chat.id, query.message.message_id, { inline_keyboard: newKeyboard });
-    });
+    }
+    stateManager.setState(state);
 }
 
 async function deleteTrend(winccoa, msg, myBot, chatId) {
@@ -180,39 +185,36 @@ async function deleteTrend(winccoa, msg, myBot, chatId) {
         state[chatId]["trends"] = {};
     }
     let keys = Object.keys(state[chatId]["trends"]);
-    let keyboard = keys.map((key) => [{ text: `delete ${key}`, callback_data: `delete:${key}:${chatId}` }]);
+    let keyboard = keys.map((key) => [{ text: `delete ${key}`, callback_data: `delete:${key}` }]);
     myBot.sendMessage(chatId, `Choose trend for deleting:`, { reply_markup: { inline_keyboard: keyboard } });
     myBot.action('delete', async (query) => {
-        const [, trendName, chatId] = query.data.split(':');
-        if (answeredQueries.has(query.id)) return;
-        answeredQueries.set(query.id, '');
+        const [, trendName] = query.data.split(':');
+        const chatId = query.message.chat.id;
         let stateManager = new State(winccoa);
         let state = stateManager.getState();
         delete state[chatId]["trends"][`${trendName}`];
         stateManager.setState(state);
         let keys = Object.keys(state[chatId]["trends"]);
-        const newKeyboard = keys.map((key) => [{ text: `delete ${key}`, callback_data: `delete:${key}:${chatId}` }]);
-        myBot.editMessageReplyMarkup(query.message.chat.id, query.message.message_id, { inline_keyboard: newKeyboard });
+        const newKeyboard = keys.map((key) => [{ text: `delete ${key}`, callback_data: `delete:${key}` }]);
+        await myBot.editMessageReplyMarkup(query.message.chat.id, query.message.message_id, { inline_keyboard: newKeyboard });
     });
 }
 
 async function makeReplyMarkup(chatId, winccoa, trend) {
     let availbleDpes = await winccoa.dpGet(`${dpName}.dpesForTrends`);
     availbleDpes = availbleDpes.filter(x => x.includes(chatId))[0].replace(`${chatId}#`, '').split(';').filter(x => x != '');
-    let keyboard = availbleDpes.filter(x => !trend["dpes"]?.includes(x)).map((key) =>
-        {
-            const btnText = winccoa.dpGetDescription(key);
-            return [{ text: `add ${btnText}`, callback_data: `add_dpe:${winccoa.dpGetId(key)[0]}:${winccoa.dpGetId(key)[1]}:${trend["name"]}:${chatId}` }]
-        });
-    const btnsExistedDpes = trend["dpes"]?.map((key) =>
-        {
-            const btnText = winccoa.dpGetDescription(key);
-            return [{ text: `remove ${btnText}`, callback_data: `delete_dpe:${winccoa.dpGetId(key)[0]}:${winccoa.dpGetId(key)[1]}:${trend["name"]}:${chatId}` }] ?? [[]]
-        })
+    let keyboard = availbleDpes.filter(x => !trend["dpes"]?.includes(x)).map((key) => {
+        const btnText = winccoa.dpGetDescription(key);
+        return [{ text: `add ${btnText}`, callback_data: `add_dpe:${winccoa.dpGetId(key)[0]}:${winccoa.dpGetId(key)[1]}:${trend["name"]}` }]
+    });
+    const btnsExistedDpes = trend["dpes"]?.map((key) => {
+        const btnText = winccoa.dpGetDescription(key);
+        return [{ text: `remove ${btnText}`, callback_data: `delete_dpe:${winccoa.dpGetId(key)[0]}:${winccoa.dpGetId(key)[1]}:${trend["name"]}` }] ?? [[]]
+    })
     keyboard = keyboard.concat(btnsExistedDpes ?? [[]]);
-    keyboard.push([{ text: 'Finish editing', callback_data: 'finedit' }])
     return keyboard;
 }
+
 function showAvailableTrends(winccoa, msg, myBot, chatId) {
     let stateManager = new State(winccoa);
     let state = stateManager.getState();
@@ -243,10 +245,13 @@ async function configureTrends(winccoa, msg, myBot, chatId) {
 }
 
 async function generateChart(chartConfig) {
-    const puppeteer = require('puppeteer');
+    const puppeteer = await import('puppeteer');
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-    const chartJsContent = fs.readFileSync(path.resolve(__dirname, '../utils/chart.js'), 'utf8');
+    const chartJsContent = fs.readFileSync(
+        path.join(path.dirname(require.resolve('chart.js')), 'chart.umd.js'),
+        'utf8'
+    );
     const strCharConfig = JSON.stringify(chartConfig);
     const html = `
     <html>
@@ -265,9 +270,9 @@ async function generateChart(chartConfig) {
     </body>
     </html>
     `;
-    await page.goto('about:blank', { waitUntil: 'domcontentloaded' });
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('canvas');
+    await page.goto('about:blank', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForSelector('canvas', { timeout: 60000 });
     const buffer = await page.screenshot();
     await browser.close();
     return buffer;
@@ -279,3 +284,4 @@ module.exports.configureTrends = configureTrends
 module.exports.addTrend = addTrend
 module.exports.deleteTrend = deleteTrend
 module.exports.editExistingTrend = editExistingTrend
+module.exports.generateChart = generateChart

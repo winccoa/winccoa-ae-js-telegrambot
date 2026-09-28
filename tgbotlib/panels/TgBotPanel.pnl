@@ -274,7 +274,7 @@ setItems(string dp, dyn_string users)
     string user = users[i].split(\"#\")[0];
     this.appendItem(user);
   }
-  if (isAnswer())
+  if (isAnswer() && users.count() > 0)
   {
     string chatId = getChaIdByName(this.items[1]);
     assignedDps.text = getDpesForChetId(\"dpesForSet\",chatId);
@@ -413,7 +413,7 @@ setItems(string dp, dyn_string users)
     string user = users[i].split(\"#\")[0];
     this.appendItem(user);
   }
-  if (isAnswer())
+  if (isAnswer() && users.count() > 0)
   {
     string chatId = getChaIdByName(this.items[1]);
     alertQuery.text = getDpesForChetId(\"alarmQuery\",chatId);
