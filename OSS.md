@@ -29,5 +29,5 @@ Please note the following license conditions and copyright notices applicable to
 | Component | Open Source Software [Yes/No] | Acknowledgements/Comment | License conditions and copyright notices |
 |-----------|------------------------------|-------------------------|----------------------------------------|
 | node-telegram-bot-api 2.1.0 | Yes | MIT | https://github.com/yagop/node-telegram-bot-api/blob/master/LICENSE.md |
-| Puppeteer 25.11.0 | Yes | Apache-2.0 | https://github.com/puppeteer/puppeteer/blob/main/LICENSE |
+| Puppeteer 25.16.0 | Yes | Apache-2.0 | https://github.com/puppeteer/puppeteer/blob/main/LICENSE |
 | Chart.js 4.5.1 | Yes | MIT | https://github.com/chartjs/Chart.js/blob/master/LICENSE.md |
